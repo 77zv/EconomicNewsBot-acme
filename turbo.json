@@ -17,6 +17,7 @@
         "DISCORD_CLIENT_SECRET",
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
+        "NEXT_PUBLIC_BETTER_AUTH_URL",
         "RABBITMQ_URL",
         "RABBITMQ_HOST",
         "RABBITMQ_PORT",
