@@ -8,6 +8,21 @@
         "!.next/cache/**",
         "dist/**",
         "*.tsbuildinfo"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "DISCORD_TOKEN",
+        "DISCORD_CLIENT_ID",
+        "DISCORD_CLIENT_SECRET",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "RABBITMQ_URL",
+        "RABBITMQ_HOST",
+        "RABBITMQ_PORT",
+        "RABBITMQ_USER",
+        "RABBITMQ_PASS",
+        "NODE_ENV"
       ]
     },
     "check-types": {
