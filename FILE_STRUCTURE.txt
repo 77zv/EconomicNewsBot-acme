@@ -1,0 +1,207 @@
+FOREX FACTORY BOT WEBSITE - REPOSITORY FILE STRUCTURE
+=====================================================
+
+forex-factory-bot-website/
+│
+├── .gitignore
+├── next-env.d.ts
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── prettier.config.mjs
+├── README.md
+├── tsconfig.json
+├── turbo.json
+│
+├── apps/
+│   ├── discord/
+│   │   ├── dist/                              [Compiled JavaScript output]
+│   │   │
+│   │   ├── src/                               [TypeScript source]
+│   │   │   ├── bot/
+│   │   │   │   ├── bot.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── deploy-commands.ts
+│   │   │   │   ├── commands/
+│   │   │   │   │   ├── admin/
+│   │   │   │   │   │   ├── createSchedule.ts
+│   │   │   │   │   │   ├── deleteAllSchedules.ts
+│   │   │   │   │   │   ├── deleteSchedule.ts
+│   │   │   │   │   │   ├── editSchedule.ts
+│   │   │   │   │   │   └── listSchedules.ts
+│   │   │   │   │   └── public/
+│   │   │   │   │       ├── today.ts
+│   │   │   │   │       ├── tomorrow.ts
+│   │   │   │   │       └── week.ts
+│   │   │   │   ├── events/
+│   │   │   │   │   ├── interactionCreate.ts
+│   │   │   │   │   └── ready.ts
+│   │   │   │   └── utils/
+│   │   │   │       ├── CommandBuilder.ts
+│   │   │   │       ├── embedBuilder.ts
+│   │   │   │       ├── scheduleEmbedBuilder.ts
+│   │   │   │       └── scheduleListEmbedBuilder.ts
+│   │   │   └── scheduler/
+│   │   │       └── index.ts
+│   │   │
+│   │   ├── node_modules/
+│   │   ├── notes.txt
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
+│   │
+│   └── nextjs/
+│       ├── public/
+│       │   ├── bot-example.png
+│       │   ├── favicon.ico
+│       │   └── forexfactory-logo.png
+│       │
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── layout.tsx
+│       │   │   ├── page.tsx
+│       │   │   ├── providers.tsx
+│       │   │   ├── trpc-provider.tsx
+│       │   │   ├── api/
+│       │   │   │   ├── auth/
+│       │   │   │   │   └── [...all]/
+│       │   │   │   │       └── route.ts
+│       │   │   │   └── trpc/
+│       │   │   │       └── [trpc]/
+│       │   │   │           └── route.ts
+│       │   │   ├── components/
+│       │   │   │   ├── command-showcase.tsx
+│       │   │   │   ├── discord-preview.tsx
+│       │   │   │   ├── feature-card.tsx
+│       │   │   │   ├── feature-highlights.tsx
+│       │   │   │   ├── footer.tsx
+│       │   │   │   └── nav.tsx
+│       │   │   ├── dashboard/
+│       │   │   │   └── page.tsx
+│       │   │   ├── data/
+│       │   │   │   └── commands.ts
+│       │   │   ├── how-to-use/
+│       │   │   │   └── page.tsx
+│       │   │   ├── privacy-policy/
+│       │   │   │   └── page.tsx
+│       │   │   └── terms-of-service/
+│       │   │       └── page.tsx
+│       │   │
+│       │   ├── lib/
+│       │   │   └── auth-client.ts
+│       │   │
+│       │   ├── styles/
+│       │   │   └── globals.css
+│       │   │
+│       │   └── utils/
+│       │       └── api.ts
+│       │
+│       ├── node_modules/
+│       ├── next-env.d.ts
+│       ├── next.config.mjs
+│       ├── package.json
+│       ├── postcss.config.cjs
+│       ├── tailwind.config.ts
+│       └── tsconfig.json
+│
+├── packages/
+│   ├── api/
+│   │   ├── dist/                              [Compiled JavaScript output]
+│   │   │
+│   │   ├── src/                               [TypeScript source]
+│   │   │   ├── auth.ts
+│   │   │   ├── index.ts
+│   │   │   ├── root.ts
+│   │   │   ├── trpc.ts
+│   │   │   ├── models/
+│   │   │   │   └── index.ts
+│   │   │   ├── repositories/
+│   │   │   │   ├── discordChannel.repository.ts
+│   │   │   │   ├── discordServer.repository.ts
+│   │   │   │   └── schedule.repository.ts
+│   │   │   ├── routers/
+│   │   │   │   └── example.ts
+│   │   │   ├── services/
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── news.service.ts
+│   │   │   │   └── schedule.service.ts
+│   │   │   └── utils/
+│   │   │       └── timezoneMapping.ts
+│   │   │
+│   │   ├── node_modules/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
+│   │
+│   ├── db/
+│   │   ├── dist/                              [Compiled JavaScript output]
+│   │   │
+│   │   ├── generated/                         [Prisma generated client]
+│   │   │
+│   │   ├── src/
+│   │   │   ├── index.ts
+│   │   │   ├── schema.prisma
+│   │   │   └── migrations/
+│   │   │       ├── 20250306043428_init/
+│   │   │       │   └── migration.sql
+│   │   │       └── migration_lock.toml
+│   │   │
+│   │   ├── node_modules/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
+│   │
+│   ├── env/
+│   │   ├── src/
+│   │   │   └── env.mjs
+│   │   │
+│   │   ├── node_modules/
+│   │   └── package.json
+│   │
+│   ├── messaging/
+│   │   ├── dist/                              [Compiled JavaScript output]
+│   │   │
+│   │   ├── src/                               [TypeScript source]
+│   │   │   ├── index.ts
+│   │   │   └── messagebroker.service.ts
+│   │   │
+│   │   ├── node_modules/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
+│   │
+│   └── typescript-config/
+│       ├── package.json
+│       └── tsconfig.json
+│
+└── node_modules/
+
+
+SUMMARY
+=======
+
+Project Structure:
+- Monorepo using pnpm workspaces and Turborepo
+- 2 applications: Discord bot & Next.js web application
+- 5 shared packages: api, db, env, messaging, typescript-config
+
+Applications:
+1. apps/discord/ - Discord bot with commands (admin & public) and scheduler
+2. apps/nextjs/ - Next.js web application with dashboard and API routes
+
+Packages:
+1. packages/api/ - Shared API layer with tRPC routers, repositories, and services
+2. packages/db/ - Database package with Prisma ORM
+3. packages/env/ - Environment variable management
+4. packages/messaging/ - Message broker service
+5. packages/typescript-config/ - Shared TypeScript configuration
+
+Key Technologies:
+- TypeScript
+- Discord.js
+- Next.js (App Router)
+- tRPC
+- Prisma ORM
+- pnpm (package manager)
+- Turborepo (monorepo tool)
+
