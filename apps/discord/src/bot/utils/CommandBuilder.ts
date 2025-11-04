@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
-import { Currency, Impact, Market, Timezone, NewsScope, Frequency, TimeDisplay } from '@repo/api/src/models/index';
+import { Currency, Impact, Market, Timezone, NewsScope, Frequency, TimeDisplay } from '@repo/api';
 
 export class CommandBuilder {
   private command: SlashCommandBuilder;

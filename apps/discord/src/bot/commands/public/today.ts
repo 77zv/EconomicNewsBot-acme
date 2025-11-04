@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { Currency, Impact, Timezone, Market, TimeDisplay, parseEnumArray } from '@repo/api/src/models/index'
-import { newsService } from '@repo/api/src/services/index'
+import { Currency, Impact, Timezone, Market, TimeDisplay, parseEnumArray } from '@repo/api'
+import { newsService } from '@repo/api'
 import { buildNewsEmbed } from "../../utils/embedBuilder"
 import { CommandBuilder } from "../../utils/CommandBuilder"
 

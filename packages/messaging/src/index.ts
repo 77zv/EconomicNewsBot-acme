@@ -1,1 +1,1 @@
-export { MessageBrokerService } from './services/messagebroker.service';
+export { MessageBrokerService } from './messagebroker.service';

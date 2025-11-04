@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
-import { ScheduleService } from "@repo/api/src/services/schedule.service";
+import { ScheduleService } from "@repo/api";
 import { buildScheduleConfirmationEmbed } from "../../utils/scheduleEmbedBuilder";
 import { CommandBuilder } from "../../utils/CommandBuilder";
 import {
   Impact,
   Currency,
   parseEnumArray
-} from "@repo/api/src/models/index";
+} from "@repo/api";
 
 const scheduleService = ScheduleService.getInstance();
 

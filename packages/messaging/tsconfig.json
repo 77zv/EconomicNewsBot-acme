@@ -3,8 +3,9 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": false,
+    "noEmit": false,
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "module": "esnext",
     "target": "es2020",
     "moduleResolution": "node",
@@ -13,7 +14,7 @@
       "@packages/*": ["../*/"]
     }
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
 

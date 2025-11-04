@@ -23,10 +23,8 @@ export interface NewsOptions {
 
 export class NewsService {
   private static instance: NewsService | null = null;
-  private readonly cache: Map<string, { data: News[]; timestamp: number }> = new Map();
+  private readonly cache: Map<string, { data: News[]; timestamp: number }> = new Map<string, { data: News[]; timestamp: number }>();
   private readonly CACHE_DURATION = 1000 * 60 * 60; // 1 hour
-
-  private constructor() {}
 
   public static getInstance(): NewsService {
     if (!NewsService.instance) {
@@ -53,14 +51,15 @@ export class NewsService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      const news = data.map((item: any) => {
-        return {
-          title: item.title,
-          country: item.country as Currency,
-          impact: item.impact as Impact,
-        };
-      });
+      const data = (await response.json()) as { title: string; country: Currency; impact: Impact; date: string; forecast: string; previous: string }[];
+      const news: News[] = data.map((item) => ({
+        title: item.title,
+        country: item.country,
+        impact: item.impact,
+        date: item.date,
+        forecast: item.forecast,
+        previous: item.previous,
+      }));
 
       this.cache.set(endpoint, { data: news, timestamp: Date.now() });
       return news;

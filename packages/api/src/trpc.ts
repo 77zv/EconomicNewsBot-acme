@@ -14,7 +14,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { getSessionCookie } from "better-auth/cookies";
-import { prisma } from "@repo/db/src";
+import { prisma } from "@repo/db";
 import { auth } from "./auth";
 
 /**

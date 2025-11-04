@@ -6,7 +6,8 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**",
-        "dist/**"
+        "dist/**",
+        "*.tsbuildinfo"
       ]
     },
     "check-types": {

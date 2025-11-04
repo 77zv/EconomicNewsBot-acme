@@ -1,5 +1,5 @@
 import type { Schedule } from "../models";
-import prisma from "@repo/db/src/";
+import prisma from "@repo/db";
 
 export type CreateScheduleDTO = Omit<
   Schedule,

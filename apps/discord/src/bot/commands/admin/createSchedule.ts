@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, ChannelType, PermissionFlagsBits } from "discord.js";
-import { ScheduleService } from "@repo/api/src/services/schedule.service";
+import { ScheduleService } from "@repo/api";
 import { buildScheduleConfirmationEmbed } from "../../utils/scheduleEmbedBuilder";
 import { CommandBuilder } from "../../utils/CommandBuilder";
 import {
@@ -11,7 +11,7 @@ import {
   Market,
   parseEnumArray,
   TimeDisplay
-} from "@repo/api/src/models/index";
+} from "@repo/api";
 
 const scheduleService = ScheduleService.getInstance();
 

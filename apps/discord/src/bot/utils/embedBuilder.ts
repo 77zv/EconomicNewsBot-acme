@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { News, TimeDisplay } from "@repo/api/src/models/index";
+import { News, TimeDisplay } from "@repo/api";
 
 const impactColors = {
   HIGH: "🔴",

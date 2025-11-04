@@ -8,7 +8,7 @@ import  {
   type DiscordServer,
   Timezone,
   type Schedule,
-} from "@repo/db/src/";
+} from "@repo/db";
 import { getIANATimezone } from "../utils/timezoneMapping";
 import dayjs from "dayjs";
 
@@ -126,12 +126,12 @@ export class ScheduleService {
         serverTime = this._convertToServerTime(hour, minute, timezone);
       }
 
-      if (data.hour || data.minute) {
+      if (data.hour ?? data.minute) {
         const conflictingSchedule = await this._checkScheduleExists({
-          channelId: data.channelId || existingSchedule.channelId,
-          serverId: data.serverId || existingSchedule.serverId,
-          hour: data.hour || existingSchedule.hour,
-          minute: data.minute || existingSchedule.minute,
+          channelId: data.channelId ?? existingSchedule.channelId,
+          serverId: data.serverId ?? existingSchedule.serverId,
+          hour: data.hour ?? existingSchedule.hour,
+          minute: data.minute ?? existingSchedule.minute,
         });
 
         if (conflictingSchedule && conflictingSchedule.id !== id) {
@@ -148,7 +148,7 @@ export class ScheduleService {
           );
 
           return {
-            schedule: result!,
+            schedule: result,
             merged: true,
           };
         }
@@ -164,7 +164,7 @@ export class ScheduleService {
       };
       const result = await this.scheduleRepository.update(id, updatedSchedule);
       return {
-        schedule: result!,
+        schedule: result,
         merged: false,
       };
     } catch (error) {

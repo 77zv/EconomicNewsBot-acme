@@ -1,15 +1,14 @@
 import amqp from 'amqplib';
-import { Client, TextChannel, EmbedBuilder } from 'discord.js';
-import type { Schedule, News, Currency, Impact } from '@repo/api/src/models/index';
-import { TimeDisplay } from '@repo/api/src/models/index';
+import type { Client, TextChannel } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import type { Schedule, News, Currency, Impact, Market } from '@repo/api';
+import { TimeDisplay } from '@repo/api';
 
 export class MessageBrokerService {
   private static instance: MessageBrokerService | null = null;
-  private connection: any | null = null;
-  private channel: any | null = null;
+  private connection: Awaited<ReturnType<typeof amqp.connect>> | null = null;
+  private channel: Awaited<ReturnType<Awaited<ReturnType<typeof amqp.connect>>['createChannel']>> | null = null;
   private readonly QUEUE_NAME = 'schedule_tasks';
-
-  private constructor() {}
 
   public static getInstance(): MessageBrokerService {
     if (!MessageBrokerService.instance) {
@@ -20,7 +19,7 @@ export class MessageBrokerService {
 
   public async connect(): Promise<void> {
     try {
-      const url = process.env.RABBITMQ_URL || 
+      const url = process.env.RABBITMQ_URL ?? 
         `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`;
       
       const conn = await amqp.connect(url);
@@ -40,7 +39,7 @@ export class MessageBrokerService {
       console.log('Connected to RabbitMQ');
 
       await this.consumeScheduleTasks(async (message) => {
-        const { serverId, channelId, news: rawNews, market, timeDisplay } = message;
+        const { serverId, channelId, news: rawNews, market, timeDisplay } = message as { serverId: string; channelId: string; news: News[]; market: Market; timeDisplay: TimeDisplay };
 
         try {
           const guild = await client.guilds.fetch(serverId);
@@ -68,14 +67,14 @@ export class MessageBrokerService {
             return;
           }
 
-          const news = rawNews.map((item: any) => {
+          const news = rawNews.map((item: News) => {
             return {
-              title: item.title as string,
-              country: item.country as Currency,
-              date: item.date as Date,
-              impact: item.impact as Impact,
-              forecast: item.forecast as number,
-              previous: item.previous as number,
+              title: item.title,
+              country: item.country,
+              date: item.date,
+              impact: item.impact,
+              forecast: item.forecast,
+              previous: item.previous,
             };
           });
 
@@ -105,7 +104,7 @@ export class MessageBrokerService {
     }
   }
 
-  public async publishScheduleTask(schedule: Schedule, news: News[]): Promise<void> {
+  public publishScheduleTask(schedule: Schedule, news: News[]): void {
     if (!this.channel) {
       throw new Error('RabbitMQ channel not initialized');
     }

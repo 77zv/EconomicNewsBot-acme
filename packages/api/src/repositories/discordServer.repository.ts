@@ -1,4 +1,4 @@
-import prisma from "@repo/db/src";
+import prisma from "@repo/db";
 import type { DiscordServer} from '../models'
 
 export type CreateDiscordServerDTO = Omit<DiscordServer, 'id' | 'createdAt' | 'updatedAt'>

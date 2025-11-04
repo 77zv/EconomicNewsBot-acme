@@ -1,8 +1,8 @@
 import "@repo/env";
-import { ScheduleService } from "@repo/api/services/schedule.service";
-import { NewsService } from "@repo/api/services/news.service";
-import { MessageBrokerService } from "@repo/messaging/services/messagebroker.service";
-import { Market, NewsScope } from "@repo/api/models/index";
+import { ScheduleService } from "@repo/api";
+import { NewsService } from "@repo/api";
+import { MessageBrokerService } from "@repo/messaging";
+import { Market, NewsScope } from "@repo/api";
 import cron from "node-cron";
 
 class SchedulerProcess {
