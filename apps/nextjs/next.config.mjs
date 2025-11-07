@@ -8,6 +8,11 @@ await import("@repo/env");
 const config = {
   reactStrictMode: true,
   
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/.prisma/client/**/*'],
+    '/*': ['./node_modules/.prisma/client/**/*'],
+  },
+  
   // App Router is enabled by default in Next.js 13.4+
 
   /**
