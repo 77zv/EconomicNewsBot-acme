@@ -240,6 +240,15 @@ export class ScheduleService {
     }
   }
 
+  public async getSchedulesByServerId(serverId: string): Promise<Schedule[]> {
+    try {
+      return await this.scheduleRepository.findByServerId(serverId);
+    } catch (error) {
+      console.error("Error getting schedules for server:", error);
+      throw new Error(`Failed to get schedules for server ${serverId}`);
+    }
+  }
+
   private async _checkServerExists(
     serverId: string
   ): Promise<DiscordServer | null> {

@@ -37,6 +37,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
   const serverId = interaction.guildId;
+  const userId = interaction.user.id;
   const channelId = interaction.channelId;
   const channelType = interaction.channel?.type;
   const timeZone = interaction.options.get("timezone")?.value as Timezone || Timezone.DEFAULT;
