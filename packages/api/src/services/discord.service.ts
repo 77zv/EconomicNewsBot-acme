@@ -100,8 +100,8 @@ export class DiscordService {
   /**
    * Filters guilds where user has admin permissions
    */
-  filterAdminGuilds(guilds: DiscordGuild[]): DiscordGuild[] {
-    return guilds.filter(
+  filterAdminGuilds<T extends DiscordGuild> (guilds: T[]): T[] {
+    return (guilds).filter(
       (guild) => guild.owner || this.hasAdminPermission(guild.permissions)
     );
   }

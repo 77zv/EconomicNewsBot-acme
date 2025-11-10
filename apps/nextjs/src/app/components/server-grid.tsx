@@ -1,20 +1,13 @@
 "use client";
 
 import ServerCard from "./server-card";
+import type { GuildWithBot } from "@repo/api";
 
-interface Guild {
-  id: string;
-  name: string;
+type ServerGridProps = GuildWithBot & {
   iconUrl: string | null;
-  botInstalled: boolean;
-  scheduleCount?: number;
 }
 
-interface ServerGridProps {
-  guilds: Guild[];
-}
-
-export default function ServerGrid({ guilds }: ServerGridProps) {
+export default function ServerGrid({ guilds }: { guilds: ServerGridProps[] }) {
   if (guilds.length === 0) {
     return (
       <div className="text-center py-12">
