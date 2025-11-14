@@ -11,6 +11,11 @@ import  {
 } from "@repo/db";
 import { getIANATimezone } from "../utils/timezoneMapping";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export class ScheduleService {
   private static instance: ScheduleService | null = null;
