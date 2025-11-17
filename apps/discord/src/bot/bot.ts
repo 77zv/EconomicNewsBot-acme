@@ -39,7 +39,7 @@ async function startBot() {
   // Load events
   const eventsPath = path.join(__dirname, 'events');
   // Determine extension based on whether we're running from src or dist
-  const fileExt = __dirname.includes('/dist/') ? '.js' : '.ts';
+  const fileExt = __dirname.includes('dist') ? '.js' : '.ts';
   const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith(fileExt));
 
   for (const file of eventFiles) {
