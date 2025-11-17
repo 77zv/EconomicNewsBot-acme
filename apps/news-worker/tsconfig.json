@@ -1,9 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": false,
     "noEmit": false,
     "outDir": "dist",
     "rootDir": "src",
@@ -12,11 +9,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "paths": {
-      "@packages/*": ["../*/"]
+      "@packages/*": ["../../packages/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
-
 
