@@ -23,3 +23,4 @@ WHAT TRADING SERVER OWNERS NEED:
 
 DEVELOPMENT:
 TODO: for filter options, don't store empty arrays, store all entries for all (this way you can query DB better)
+TODO: delete server if it doesn't exist anymore (delete channels, schedules, and alerts associated with it)
