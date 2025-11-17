@@ -48,7 +48,7 @@ export class SendAlertsJob {
 
     console.log(`[SendAlertsJob] Looking for 5-min alerts at ${timeString}`);
     console.log(`[SendAlertsJob] Target time object:`, targetTime);
-    
+
     const upcomingEvents = await prisma.newsEvent.findMany({
       where: {
         date: targetTime,
@@ -59,10 +59,8 @@ export class SendAlertsJob {
       console.log(
         `[SendAlertsJob] ⏰ Found ${upcomingEvents.length} events occurring in 5 minutes`
       );
-      
-      for (const event of upcomingEvents) {
-        await this.sendAlert(event, "FIVE_MINUTES_BEFORE");
-      }
+
+      await this.sendGroupedAlerts(upcomingEvents, "FIVE_MINUTES_BEFORE");
     } else {
       console.log(`[SendAlertsJob] No 5-minute alerts needed`);
     }
@@ -96,33 +94,21 @@ export class SendAlertsJob {
       console.log(
         `[SendAlertsJob] 🚨 Found ${currentEvents.length} events dropping NOW`
       );
-      
-      for (const event of currentEvents) {
-        await this.sendAlert(event, "ON_NEWS_DROP");
-      }
+
+      await this.sendGroupedAlerts(currentEvents, "ON_NEWS_DROP");
     } else {
       console.log(`[SendAlertsJob] No on-drop alerts needed`);
     }
   }
 
-  private async sendAlert(
-    event: any,
+  private async sendGroupedAlerts(
+    events: any[],
     alertType: "FIVE_MINUTES_BEFORE" | "ON_NEWS_DROP"
   ): Promise<void> {
     try {
-      // Create unique key for this alert
-      const alertKey = `${event.id}-${alertType}`;
-
-      // Skip if already sent in this session
-      if (this.sentAlerts.has(alertKey)) {
-        return;
-      }
-
-      // Get all NewsAlert configurations that match this event's criteria
-      // Note: Empty arrays in NewsAlert mean "match all"
+      // Get all alert configurations for this alert type
       const allAlertConfigs = await prisma.newsAlert.findMany({
         where: {
-          // Filter by alert type
           alertType: {
             has: alertType,
           },
@@ -133,53 +119,68 @@ export class SendAlertsJob {
         },
       });
 
-      // Filter in memory to handle empty arrays as "match all"
-      const alertConfigs = allAlertConfigs.filter((config) => {
-        // Empty currency array means match all currencies
-        const matchesCurrency =
-          config.currency.length === 0 ||
-          config.currency.includes(event.currency as Currency);
-
-        // Empty impact array means match all impacts
-        const matchesImpact =
-          config.impact.length === 0 ||
-          config.impact.includes(event.impact as Impact);
-
-        return matchesCurrency && matchesImpact;
-      });
-
-      if (alertConfigs.length === 0) {
+      if (allAlertConfigs.length === 0) {
         return;
       }
 
       const alertTypeText = alertType === "FIVE_MINUTES_BEFORE" ? "5-minute" : "NOW";
       const emoji = alertType === "FIVE_MINUTES_BEFORE" ? "⏰" : "🚨";
-      console.log(
-        `[SendAlertsJob] ${emoji} Sending ${alertTypeText} alerts to ${alertConfigs.length} channels for: ${event.title} (${event.currency} ${event.impact})`
-      );
 
-      // Send alert to each configured channel
-      for (const config of alertConfigs) {
-        await this.messageBroker.publishNewsAlert({
-          title: event.title,
-          country: event.currency,
-          impact: event.impact,
-          date: event.date.toISOString(),
-          forecast: event.forecast,
-          previous: event.previous,
-          alertType: alertType,
-          channelId: config.channelId,
-          serverId: config.serverId,
+      // Group events by channel - for each channel, collect all matching events
+      for (const config of allAlertConfigs) {
+        // Filter events that match this channel's configuration
+        const matchingEvents = events.filter((event) => {
+          // Check if already sent
+          const alertKey = `${event.id}-${alertType}`;
+          if (this.sentAlerts.has(alertKey)) {
+            return false;
+          }
+
+          // Empty currency array means match all currencies
+          const matchesCurrency =
+            config.currency.length === 0 ||
+            config.currency.includes(event.currency as Currency);
+
+          // Empty impact array means match all impacts
+          const matchesImpact =
+            config.impact.length === 0 ||
+            config.impact.includes(event.impact as Impact);
+
+          return matchesCurrency && matchesImpact;
         });
-      }
 
-      // Mark as sent in memory
-      this.sentAlerts.add(alertKey);
+        if (matchingEvents.length > 0) {
+          console.log(
+            `[SendAlertsJob] ${emoji} Sending ${alertTypeText} alert to channel ${config.channelId} with ${matchingEvents.length} events`
+          );
+
+          // Send grouped alert to channel
+          await this.messageBroker.publishGroupedNewsAlert({
+            events: matchingEvents.map(event => ({
+              title: event.title,
+              country: event.currency,
+              impact: event.impact,
+              date: event.date.toISOString(),
+              forecast: event.forecast,
+              previous: event.previous,
+            })),
+            alertType: alertType,
+            channelId: config.channelId,
+            serverId: config.serverId,
+          });
+
+          // Mark all events as sent
+          for (const event of matchingEvents) {
+            const alertKey = `${event.id}-${alertType}`;
+            this.sentAlerts.add(alertKey);
+          }
+        }
+      }
 
       // Clean up old entries from memory
       this.cleanupSentAlerts();
     } catch (error) {
-      console.error(`[SendAlertsJob] Error sending ${alertType} alert:`, error);
+      console.error(`[SendAlertsJob] Error sending ${alertType} alerts:`, error);
     }
   }
 

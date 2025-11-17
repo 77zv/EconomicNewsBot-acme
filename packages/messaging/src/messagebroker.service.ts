@@ -259,6 +259,30 @@ export class MessageBrokerService {
     );
   }
 
+  public publishGroupedNewsAlert(alertData: {
+    events: Array<{
+      title: string;
+      country: string;
+      impact: string;
+      date: string;
+      forecast: string;
+      previous: string;
+    }>;
+    alertType: string;
+    channelId: string;
+    serverId: string;
+  }): void {
+    if (!this.channel) {
+      throw new Error('RabbitMQ channel not initialized');
+    }
+
+    this.channel.sendToQueue(
+      this.NEWS_ALERT_QUEUE,
+      Buffer.from(JSON.stringify({ ...alertData, isGrouped: true })),
+      { persistent: true }
+    );
+  }
+
   public async consumeNewsAlerts(client: Client): Promise<void> {
     if (!this.channel) {
       throw new Error('RabbitMQ channel not initialized');
@@ -267,58 +291,65 @@ export class MessageBrokerService {
     await this.channel.consume(this.NEWS_ALERT_QUEUE, async (msg: amqp.ConsumeMessage | null) => {
       if (msg) {
         try {
-          const alert = JSON.parse(msg.content.toString()) as {
-            title: string;
-            country: string;
-            impact: string;
-            date: string;
-            forecast: string;
-            previous: string;
-            alertType: string;
-            channelId: string;
-            serverId: string;
-          };
+          const alertData = JSON.parse(msg.content.toString());
 
           // Get guild and channel
-          const guild = await client.guilds.fetch(alert.serverId);
+          const guild = await client.guilds.fetch(alertData.serverId);
           if (!guild) {
-            console.warn(`Guild ${alert.serverId} not found - acknowledging message`);
+            console.warn(`Guild ${alertData.serverId} not found - acknowledging message`);
             this.channel?.ack(msg);
             return;
           }
 
-          const channel = (await guild.channels.fetch(alert.channelId)) as TextChannel;
+          const channel = (await guild.channels.fetch(alertData.channelId)) as TextChannel;
           if (!channel) {
-            console.warn(`Channel ${alert.channelId} not found - acknowledging message`);
+            console.warn(`Channel ${alertData.channelId} not found - acknowledging message`);
             this.channel?.ack(msg);
             return;
           }
 
           const permissions = channel.permissionsFor(client.user!);
           if (!permissions?.has('SendMessages')) {
-            console.warn(`Bot lacks permission in channel ${alert.channelId} - acknowledging message`);
+            console.warn(`Bot lacks permission in channel ${alertData.channelId} - acknowledging message`);
             this.channel?.ack(msg);
             return;
           }
 
-          // Build embed for single news item
-          const news = [{
-            title: alert.title,
-            country: alert.country as Currency,
-            impact: alert.impact as Impact,
-            date: alert.date,
-            forecast: alert.forecast,
-            previous: alert.previous,
-          }];
+          let news: any[];
+          
+          // Check if this is a grouped alert or single alert
+          if (alertData.isGrouped && alertData.events) {
+            // Grouped alert - multiple events
+            news = alertData.events.map((event: any) => ({
+              title: event.title,
+              country: event.country as Currency,
+              impact: event.impact as Impact,
+              date: event.date,
+              forecast: event.forecast,
+              previous: event.previous,
+            }));
+          } else {
+            // Single alert - one event
+            news = [{
+              title: alertData.title,
+              country: alertData.country as Currency,
+              impact: alertData.impact as Impact,
+              date: alertData.date,
+              forecast: alertData.forecast,
+              previous: alertData.previous,
+            }];
+          }
 
           // Build embeds for alerts
-          const embeds = this.buildNewsEmbeds(news, '', alert.alertType);
+          const embeds = this.buildNewsEmbeds(news, '', alertData.alertType);
 
           // Send embed (buildNewsEmbeds always returns at least one embed)
           const embed = embeds[0];
           if (embed) {
             await channel.send({ embeds: [embed] });
-            console.log(`✓ Sent ${alert.alertType} alert for "${alert.title}" to channel ${alert.channelId}`);
+            const eventCount = news.length;
+            const eventText = eventCount === 1 ? `"${news[0].title}"` : `${eventCount} events`;
+            console.log(`✓ Sent ${alertData.alertType} alert for ${eventText} to channel ${alertData.channelId}`);
           }
 
           this.channel?.ack(msg);
