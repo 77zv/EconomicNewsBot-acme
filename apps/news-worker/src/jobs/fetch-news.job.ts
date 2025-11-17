@@ -64,7 +64,7 @@ export class FetchNewsJob {
             continue;
           }
 
-          // Parse date
+          // Parse date as-is (naive timestamp, no timezone conversion)
           const eventDate = dayjs(newsItem.date).toDate();
 
           // Upsert based on unique constraint [title, date, impact, currency]

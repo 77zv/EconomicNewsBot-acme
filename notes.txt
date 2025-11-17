@@ -19,3 +19,7 @@ On Website:
 
 WHAT TRADING SERVER OWNERS NEED:
 - Signal service (allows signal providers to send signals directly to channels straight from their trading accounts)
+ 
+
+DEVELOPMENT:
+TODO: for filter options, don't store empty arrays, store all entries for all (this way you can query DB better)
