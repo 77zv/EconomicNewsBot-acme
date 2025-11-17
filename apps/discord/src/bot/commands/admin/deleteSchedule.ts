@@ -48,7 +48,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .addOptions(
         schedules.map((schedule) =>
           new StringSelectMenuOptionBuilder()
-            .setLabel(`${getFormattedTime(new Date(schedule.createdAt), schedule.timeDisplay)} - ${schedule.market}`)
+            .setLabel(`${getFormattedTime(new Date(schedule.createdAt))} - ${schedule.market}`)
             .setDescription(
               `Channel: #${interaction.guild?.channels.cache.get(schedule.channelId)?.name}`
             )

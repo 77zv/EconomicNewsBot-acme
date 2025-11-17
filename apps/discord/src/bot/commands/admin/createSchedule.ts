@@ -9,9 +9,9 @@ import {
   Impact,
   Currency,
   Market,
-  parseEnumArray,
-  TimeDisplay
+  parseEnumArray
 } from "@repo/api";
+import { TimeDisplay } from "@repo/db";
 
 const scheduleService = ScheduleService.getInstance();
 
@@ -25,7 +25,6 @@ export const data = new CommandBuilder("create-schedule", "Create a new schedule
   .addImpactOption()
   .addCurrencyOption()
   .addMarketOption()
-  // .addTimeDisplayOption()
   .build();
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -48,7 +47,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const market = interaction.options.get("market")?.value as Market || Market.FOREX;
   const hour = interaction.options.get("hour")?.value as string;
   const minute = interaction.options.get("minute")?.value as string;
-  const timeDisplay = interaction.options.get("time_display")?.value as TimeDisplay || TimeDisplay.FIXED;
 
   const currencies = parseEnumArray(currency, Object.values(Currency));
   const impacts = parseEnumArray(impact, Object.values(Impact));
@@ -83,7 +81,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       market,
       hour: parseInt(hour),
       minute: parseInt(minute),
-      timeDisplay: timeDisplay
+      timeDisplay: TimeDisplay.FIXED
     });
 
     const embed = buildScheduleConfirmationEmbed(schedule, "Created");

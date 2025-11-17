@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
-import { Currency, Impact, Market, Timezone, NewsScope, Frequency, TimeDisplay, AlertType } from '@repo/api';
+import { Currency, Impact, Market, Timezone, NewsScope, Frequency, AlertType } from '@repo/api';
 
 export class CommandBuilder {
   private command: SlashCommandBuilder;
@@ -160,20 +160,6 @@ export class CommandBuilder {
           { name: "GMT-12", value: Timezone.GMT_N12 }
         )
     );
-    return this;
-  }
-
-  addTimeDisplayOption(): CommandBuilder {
-    this.command.addStringOption(option =>
-      option
-        .setName("time_display")
-        .setDescription("Display news times in relative format to each users system, or fixed format (e.g., '14:30 UTC+1')")
-        .setRequired(false)
-        .addChoices(
-          { name: "Fixed", value: TimeDisplay.FIXED },
-          // { name: "Relative", value: TimeDisplay.RELATIVE }
-        )
-      );
     return this;
   }
 

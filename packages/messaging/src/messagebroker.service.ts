@@ -2,7 +2,6 @@ import amqp from 'amqplib';
 import type { Client, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import type { Schedule, News, Currency, Impact, Market } from '@repo/api';
-import { TimeDisplay } from '@repo/api';
 
 export class MessageBrokerService {
   private static instance: MessageBrokerService | null = null;
@@ -42,7 +41,7 @@ export class MessageBrokerService {
 
       // Start schedule tasks consumer
       await this.consumeScheduleTasks(async (message) => {
-        const { serverId, channelId, news: rawNews, market, timeDisplay } = message as { serverId: string; channelId: string; news: News[]; market: Market; timeDisplay: TimeDisplay };
+        const { serverId, channelId, news: rawNews, market } = message as { serverId: string; channelId: string; news: News[]; market: Market };
 
         try {
           const guild = await client.guilds.fetch(serverId);
@@ -83,8 +82,7 @@ export class MessageBrokerService {
 
           const embeds = this.buildNewsEmbeds(
             news,
-            `${market} News Update`,
-            (timeDisplay as TimeDisplay) ?? TimeDisplay.FIXED
+            `${market} News Update`
           );
 
           for (const embed of embeds) {
@@ -130,7 +128,7 @@ export class MessageBrokerService {
     );
   }
 
-  private buildNewsEmbeds(news: News[], title: string, timeDisplay: TimeDisplay, alertType?: string): EmbedBuilder[] {
+  private buildNewsEmbeds(news: News[], title: string, alertType?: string): EmbedBuilder[] {
     // Determine title and color based on alert type
     let embedTitle = title;
     let embedColor = 0x02ebf7; // Default cyan color
@@ -191,7 +189,7 @@ export class MessageBrokerService {
 
         embed.addFields({
           name: `${flag} ${item.country} - ${item.title}`,
-          value: `📅 ${this.getFormattedDate(new Date(item.date), timeDisplay)}\n🕒 ${this.getFormattedTime(new Date(item.date), timeDisplay)}\n${impactColor} ${item.impact} impact\n\`\`\`Forecast: ${item.forecast}\nPrevious: ${item.previous}\`\`\``,
+          value: `📅 ${this.getFormattedDate(new Date(item.date))}\n🕒 ${this.getFormattedTime(new Date(item.date))}\n${impactColor} ${item.impact} impact\n\`\`\`Forecast: ${item.forecast}\nPrevious: ${item.previous}\`\`\``,
           inline: true,
         });
       });
@@ -202,22 +200,15 @@ export class MessageBrokerService {
     return embeds;
   }
 
-  private getFormattedDate(date: Date, format: TimeDisplay): string {
-    if (format === TimeDisplay.RELATIVE) {
-      const timestamp = Math.floor(date.getTime() / 1000);
-      return `<t:${timestamp}:R>`;
-    }
-
+  private getFormattedDate(date: Date): string {
+    // Fixed format only
     const month = date.toLocaleString('en-US', { month: 'short' });
     const day = date.getDate();
     return `${month} ${day}`;
   }
 
-  private getFormattedTime(date: Date, format: TimeDisplay): string {
-    if (format === TimeDisplay.RELATIVE) {
-      const timestamp = Math.floor(date.getTime() / 1000);
-      return `<t:${timestamp}:R>`;
-    }
+  private getFormattedTime(date: Date): string {
+    // Fixed format only
 
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -320,8 +311,8 @@ export class MessageBrokerService {
             previous: alert.previous,
           }];
 
-          // Use default TimeDisplay.RELATIVE for alerts
-          const embeds = this.buildNewsEmbeds(news, '', TimeDisplay.RELATIVE, alert.alertType);
+          // Build embeds for alerts
+          const embeds = this.buildNewsEmbeds(news, '', alert.alertType);
 
           // Send embed (buildNewsEmbeds always returns at least one embed)
           const embed = embeds[0];

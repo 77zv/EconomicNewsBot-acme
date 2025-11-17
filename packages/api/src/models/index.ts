@@ -15,7 +15,6 @@ export {
   NewsScope,
   Frequency,
   Timezone,
-  TimeDisplay,
   AlertType,
 } from "@repo/db";
 
