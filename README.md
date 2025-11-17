@@ -26,6 +26,7 @@ This project uses a **monorepo architecture** with shared packages and multiple 
 forex-factory-bot-website/
 ├── apps/
 │   ├── discord/          # Discord bot application
+│   ├── news-worker/      # Background worker (news fetch, schedules, alerts)
 │   └── nextjs/           # Next.js web dashboard
 └── packages/
     ├── api/              # Shared API layer (tRPC)
@@ -159,13 +160,21 @@ pnpm deploy-commands
 apps/
 ├── discord/
 │   └── src/
-│       ├── bot/
-│       │   ├── commands/
-│       │   │   ├── admin/      # Schedule management commands
-│       │   │   └── public/     # News query commands
-│       │   ├── events/         # Discord event handlers
-│       │   └── utils/          # Embed builders, helpers
-│       └── scheduler/          # Automated task scheduler
+│       └── bot/
+│           ├── commands/
+│           │   ├── admin/      # Schedule & alert management commands
+│           │   └── public/     # News query commands
+│           ├── events/         # Discord event handlers
+│           └── utils/          # Embed builders, helpers
+│
+├── news-worker/
+│   └── src/
+│       ├── jobs/
+│       │   ├── fetch-news.job.ts      # Daily news sync
+│       │   ├── check-schedules.job.ts # User schedules
+│       │   ├── send-alerts.job.ts     # Real-time alerts
+│       │   └── cleanup.job.ts         # Weekly cleanup
+│       └── index.ts            # Job orchestrator
 │
 └── nextjs/
     └── src/
@@ -208,11 +217,19 @@ packages/
 - `/week` - Get this week's economic news
 
 ### Admin Commands (Manage Server permission required)
+
+**Schedule Management:**
 - `/create-schedule` - Create an automated news schedule
 - `/list-schedules` - View all schedules for your server
 - `/edit-schedule` - Modify an existing schedule
 - `/delete-schedule` - Delete a specific schedule
 - `/delete-all-schedules` - Remove all schedules (with confirmation)
+
+**Alert Management:**
+- `/create-alert` - Set up real-time news alerts for this channel
+- `/list-alerts` - View all alerts for your server
+- `/edit-alert` - Modify an existing alert configuration
+- `/delete-alert` - Remove a specific alert
 
 ### Work-in-Progress Commands (Development mode only)
 - `/ai-analysis` - Generate a comprehensive AI-powered forex market analysis for today (in French)
@@ -293,23 +310,36 @@ Root level commands:
 
 ## 🌐 Deployment
 
-### Discord Bot
+### Discord Bot & News Worker
 
-1. Build the application:
+1. Build the applications:
    ```bash
-   pnpm build --filter=discord
+   pnpm build --filter=discord-bot
+   pnpm build --filter=news-worker
    ```
 
 2. Deploy commands to Discord:
    ```bash
    cd apps/discord
-   pnpm deploy-commands
+   pnpm discord:deploy
    ```
 
-3. Run the bot:
+3. Run the services:
    ```bash
+   # Discord Bot
    cd apps/discord
    node dist/bot/index.js
+   
+   # News Worker (in separate terminal)
+   cd apps/news-worker
+   node dist/index.js
+   ```
+
+Or use PM2 for process management:
+   ```bash
+   pm2 start apps/discord/dist/bot/index.js --name 'discord-bot'
+   pm2 start apps/news-worker/dist/index.js --name 'news-worker'
+   pm2 save
    ```
 
 ### Next.js Web App

@@ -2,18 +2,21 @@ import "@repo/env";
 import cron from "node-cron";
 import { FetchNewsJob } from "./jobs/fetch-news.job.js";
 import { SendAlertsJob } from "./jobs/send-alerts.job.js";
+import { CheckSchedulesJob } from "./jobs/check-schedules.job.js";
 import { CleanupJob } from "./jobs/cleanup.job.js";
 import { MessageBrokerService } from "@repo/messaging";
 
 class NewsWorkerProcess {
   private fetchNewsJob: FetchNewsJob;
   private sendAlertsJob: SendAlertsJob;
+  private checkSchedulesJob: CheckSchedulesJob;
   private cleanupJob: CleanupJob;
   private messageBroker: MessageBrokerService;
 
   constructor() {
     this.fetchNewsJob = new FetchNewsJob();
     this.sendAlertsJob = new SendAlertsJob();
+    this.checkSchedulesJob = new CheckSchedulesJob();
     this.cleanupJob = new CleanupJob();
     this.messageBroker = MessageBrokerService.getInstance();
   }
@@ -44,7 +47,18 @@ class NewsWorkerProcess {
       });
       console.log("✓ Scheduled: Fetch news (daily at 2:00 AM)");
 
-      // Schedule Job 2: Send Alerts (5-min before & on news drop)
+      // Schedule Job 2: Check Schedules (user-created news summaries)
+      // Runs every 5 minutes
+      cron.schedule("*/5 * * * *", async () => {
+        try {
+          await this.checkSchedulesJob.execute();
+        } catch (error) {
+          console.error("[CRON] Check schedules job failed:", error);
+        }
+      });
+      console.log("✓ Scheduled: Check schedules (every 5 minutes)");
+
+      // Schedule Job 3: Send Alerts (5-min before & on news drop)
       // Runs every minute
       cron.schedule("* * * * *", async () => {
         try {
@@ -55,7 +69,7 @@ class NewsWorkerProcess {
       });
       console.log("✓ Scheduled: Send alerts (every minute)");
 
-      // Schedule Job 3: Cleanup Old Events
+      // Schedule Job 4: Cleanup Old Events
       // Runs weekly on Sunday at 3:00 AM
       cron.schedule("0 3 * * 0", async () => {
         console.log("\n[CRON] Starting weekly cleanup job...");
@@ -72,6 +86,7 @@ class NewsWorkerProcess {
       console.log("=================================");
       console.log("Jobs scheduled:");
       console.log("  • Fetch news: Daily at 2:00 AM");
+      console.log("  • Check schedules: Every 5 minutes");
       console.log("  • Send alerts: Every minute");
       console.log("  • Cleanup: Weekly (Sunday 3:00 AM)");
       console.log("=================================\n");

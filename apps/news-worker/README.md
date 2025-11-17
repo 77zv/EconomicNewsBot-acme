@@ -7,8 +7,8 @@ Background worker service that fetches, stores, and manages news events for the 
 The news-worker is a separate application in the monorepo that handles:
 - Fetching news events from external APIs
 - Storing events in the database
-- Monitoring for actual value releases
-- Sending alerts to configured Discord channels
+- Processing user-created news schedules
+- Sending real-time alerts to configured Discord channels
 
 ## Architecture
 
@@ -35,20 +35,21 @@ News Worker -----> RabbitMQ -----> Discord Bot
 - Uses upsert logic to avoid duplicates
 - Updates forecast/previous values if changed
 
-### 2. Check Actuals Job
+### 2. Check Schedules Job
 **Schedule:** Every 5 minutes  
-**Purpose:** Monitors for released actual values
+**Purpose:** Processes user-created news summaries
 
-- Queries unprocessed events from the last 2 hours
-- Checks API for actual values
-- Updates database when found
-- Triggers `ON_NEWS_DROP` alerts
+- Checks for schedules matching current time (in NY timezone)
+- Fetches news based on schedule configuration (daily/weekly/tomorrow)
+- Publishes schedule tasks to RabbitMQ for Discord bot consumption
+- Handles market, currency, impact, and timezone filters
 
 ### 3. Send Alerts Job
 **Schedule:** Every minute  
-**Purpose:** Sends 5-minute-before alerts
+**Purpose:** Sends real-time news alerts
 
-- Finds events occurring in 5-6 minutes
+- Sends 5-minute-before alerts for upcoming events
+- Sends on-news-drop alerts when events occur
 - Matches with `NewsAlert` configurations
 - Publishes to RabbitMQ for Discord bot consumption
 - Uses in-memory cache to prevent duplicates
