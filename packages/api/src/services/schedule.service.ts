@@ -148,8 +148,10 @@ export class ScheduleService {
 
         if (conflictingSchedule && conflictingSchedule.id !== id) {
           await this.scheduleRepository.delete(conflictingSchedule.id);
+          // Exclude fields that shouldn't be updated: id, createdAt, updatedAt, serverId, channelId
+          const { id: _, createdAt: __, updatedAt: ___, serverId: ____, channelId: _____, ...existingData } = existingSchedule;
           const updatedSchedule = {
-            ...existingSchedule,
+            ...existingData,
             ...data,
             hourServerTime: serverTime?.hour,
             minuteServerTime: serverTime?.minute,
@@ -166,8 +168,10 @@ export class ScheduleService {
         }
       }
 
+      // Exclude fields that shouldn't be updated: id, createdAt, updatedAt, serverId, channelId
+      const { id: _, createdAt: __, updatedAt: ___, serverId: ____, channelId: _____, ...existingData } = existingSchedule;
       const updatedSchedule = {
-        ...existingSchedule,
+        ...existingData,
         ...data,
         ...(serverTime && {
           hourServerTime: serverTime.hour,
