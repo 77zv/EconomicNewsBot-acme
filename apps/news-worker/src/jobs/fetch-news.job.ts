@@ -3,8 +3,10 @@ import { Market, Impact, Currency } from "@repo/api";
 import { prisma } from "@repo/db";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /**
  * Fetches news events from the API and stores them in the database
@@ -64,8 +66,20 @@ export class FetchNewsJob {
             continue;
           }
 
-          // Parse date as-is (naive timestamp, no timezone conversion)
-          const eventDate = dayjs(newsItem.date).toDate();
+          // Parse date as naive timestamp (same approach as schedules)
+          // API returns: "2025-11-16T16:45:00-05:00" (EST/EDT time with offset)
+          // We want to store: "2025-11-16 16:45:00" as naive timestamp
+          
+          // Parse the date and ensure we're working in NY timezone to get correct local time
+          // Even though the offset is already there, we explicitly set timezone to handle it consistently
+          const nyDate = dayjs(newsItem.date).tz("America/New_York");
+          
+          // Extract just the date/time components (16:45, not 21:45 UTC)
+          const timeString = nyDate.format('YYYY-MM-DD HH:mm:ss');
+          
+          // Create a Date object treating these EST/EDT values as UTC (making it naive)
+          // This stores "16:45" in the database as "2025-11-16 16:45:00"
+          const eventDate = dayjs.utc(timeString).toDate();
 
           // Upsert based on unique constraint [title, date, impact, currency]
           const result = await prisma.newsEvent.upsert({
