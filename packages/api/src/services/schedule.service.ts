@@ -274,6 +274,81 @@ export class ScheduleService {
     }
   }
 
+  /**
+   * Validates a schedule by checking:
+   * 1. Bot is still in the guild
+   * 2. Channel still exists
+   * 3. Bot has required permissions
+   * If validation fails, deletes the schedule
+   * @returns true if valid, false if invalid (and deleted)
+   */
+  public async validateAndCleanupSchedule(
+    scheduleId: string,
+    client: any // Discord.js Client
+  ): Promise<{ valid: boolean; reason?: string }> {
+    try {
+      const schedule = await this.scheduleRepository.findById(scheduleId);
+      if (!schedule) {
+        return { valid: false, reason: "Schedule not found" };
+      }
+
+      // Check if bot is still in guild
+      let guild;
+      try {
+        guild = await client.guilds.fetch(schedule.serverId);
+      } catch (error) {
+        console.log(`[ScheduleService] Bot no longer in guild ${schedule.serverId}, deleting schedule ${scheduleId}`);
+        await this.scheduleRepository.delete(scheduleId);
+        return { valid: false, reason: "Bot not in guild" };
+      }
+
+      // Check if channel still exists
+      let channel;
+      try {
+        channel = await guild.channels.fetch(schedule.channelId);
+        if (!channel) {
+          console.log(`[ScheduleService] Channel ${schedule.channelId} not found, deleting schedule ${scheduleId}`);
+          await this.scheduleRepository.delete(scheduleId);
+          return { valid: false, reason: "Channel not found" };
+        }
+      } catch (error) {
+        console.log(`[ScheduleService] Channel ${schedule.channelId} not accessible, deleting schedule ${scheduleId}`);
+        await this.scheduleRepository.delete(scheduleId);
+        return { valid: false, reason: "Channel not accessible" };
+      }
+
+      // Check if bot has required permissions
+      if (channel.isTextBased()) {
+        const botMember = guild.members.me;
+        const botPermissions = channel.permissionsFor(botMember);
+        
+        const requiredPermissions = ["ViewChannel", "SendMessages", "EmbedLinks"];
+        const missingPermissions: string[] = [];
+        
+        if (!botPermissions?.has("ViewChannel")) missingPermissions.push("ViewChannel");
+        if (!botPermissions?.has("SendMessages")) missingPermissions.push("SendMessages");
+        if (!botPermissions?.has("EmbedLinks")) missingPermissions.push("EmbedLinks");
+        
+        if (missingPermissions.length > 0) {
+          console.log(
+            `[ScheduleService] Missing permissions in channel ${schedule.channelId}: ${missingPermissions.join(", ")}, deleting schedule ${scheduleId}`
+          );
+          await this.scheduleRepository.delete(scheduleId);
+          return { 
+            valid: false, 
+            reason: `Missing permissions: ${missingPermissions.join(", ")}` 
+          };
+        }
+      }
+
+      return { valid: true };
+    } catch (error) {
+      console.error(`[ScheduleService] Error validating schedule ${scheduleId}:`, error);
+      // Don't delete on unexpected errors, return invalid
+      return { valid: false, reason: "Validation error" };
+    }
+  }
+
   private async _checkServerExists(
     serverId: string
   ): Promise<DiscordServer | null> {

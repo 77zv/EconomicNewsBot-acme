@@ -2,6 +2,7 @@ import amqp from 'amqplib';
 import type { Client, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import type { Schedule, News, Currency, Impact, Market } from '@repo/api';
+import { ScheduleService } from '@repo/api';
 
 export class MessageBrokerService {
   private static instance: MessageBrokerService | null = null;
@@ -41,17 +42,27 @@ export class MessageBrokerService {
 
       // Start schedule tasks consumer
       await this.consumeScheduleTasks(async (message) => {
-        const { serverId, channelId, news: rawNews, market, roleId } = message as { serverId: string; channelId: string; news: News[]; market: Market; roleId?: string };
+        const { scheduleId, serverId, channelId, news: rawNews, market, roleId } = message as { scheduleId: string; serverId: string; channelId: string; news: News[]; market: Market; roleId?: string };
 
         try {
+          // Validate schedule before processing
+          if (scheduleId) {
+            const scheduleService = ScheduleService.getInstance();
+            const validation = await scheduleService.validateAndCleanupSchedule(scheduleId, client);
+            
+            if (!validation.valid) {
+              console.warn(
+                `[MessageBroker] Schedule ${scheduleId} validation failed: ${validation.reason} - schedule deleted, acknowledging message`
+              );
+              return;
+            }
+          }
+
           const guild = await client.guilds.fetch(serverId);
           if (!guild) {
             console.warn(`Guild ${serverId} not found - acknowledging message`);
             return;
           }
-
-          // TODO: Enable this once the GuildMembers intent is enabled
-          // const channel = await guild.channels.fetch(channelId, { force: true }) as TextChannel;
 
           const channel = (await guild.channels.fetch(channelId)) as TextChannel;
           if (!channel) {
